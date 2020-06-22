@@ -5,6 +5,7 @@ library(shinybusy)
 library(rclipboard)
 library(shinyBS)
 library(DT)
+library(stringr)
 
 #source("loadData.R", local = TRUE)
 #source("connect_to_Db.R", local =TRUE)

@@ -45,9 +45,10 @@ shinyUI(fluidPage(
 				column(3, h4(htmlOutput(ns("PctFilledForm")))),
 				column(2, actionButton(ns("SubmitForm"), "Submit", width = '140px', icon("arrow-alt-circle-right"))),
 			),
+			br(),
 			
 			fluidRow(
-				uiOutput(ns('formSubmitText'))
+				h4(htmlOutput(ns('formSubmitText')))
 			),		
 			
 		)
@@ -85,7 +86,19 @@ Form <- function(input, output, session) {
 	  if(nchar(input$componentWtForm) == 0){
 		output$formErrorText <- renderUI({
 			span("Error - Need to Enter % By Weight", style = "color:orange")})
-	  }	  
+	  }
+	  else if(input$componentsForm == 'Select one'){
+		  output$formErrorText <- renderUI({
+			span("Error - Please Select a Component", style = "color:orange")})
+	  }	
+	  else if(input$componentsForm == 'Sequence' && input$sequenceForm == 'Select one'){
+		  output$formErrorText <- renderUI({
+			span("Error - Please Select a Sequence", style = "color:orange")})
+	  }
+	  else if(input$componentsForm == 'Recipe' && input$recipeForm == 'Select one'){
+		  output$formErrorText <- renderUI({
+			span("Error - Please Select a Recipe", style = "color:orange")})
+	  }	   	    
 	  else{
 		 if(input$componentsForm =='Sequence'){
 			t = rbind(data.frame(Component = input$sequenceForm, 
@@ -148,26 +161,26 @@ Form <- function(input, output, session) {
 	})
 
 	observeEvent(input$SubmitForm, {
-		#cat(file=stderr(), "Num rows: ", nrow(formTableData()), "\n")
 
 		output$formSubmitText <- renderUI({span("Creating Formulation", style = "color:black")})
 
 		lastRow <- 'FALSE'
-		seqVal <- formSequence()		
+		seqVal <- formSequence()
+		formCreation = ""		
 
 		for(i in 1:nrow(formTableData())){
 			componentName <- ""
 			componentVendor <- ""
 			newComponent = formTableData()$Component[i]
-			newPctWt = formTableData()$Percent_By_Wt[i]
+			newPctWt = trimws(formTableData()$Percent_By_Wt[i])
 			componentType = formTableData()$Component_Type[i]
 			splitComponent1 = as.character(newComponent)
-			splitComponent = strsplit(splitComponent1," | ")
+			splitComponent = strsplit(splitComponent1," | ", fixed = TRUE)
 
 			if(grepl(" | ", splitComponent) == TRUE){
-				componentName = sapply(strsplit(splitComponent1," | "), getElement, 1)
-				if(length(splitComponent[[1]]) > 2){
-					componentVendor = sapply(strsplit(splitComponent1," | "), getElement, 3)
+				componentName = sapply(strsplit(splitComponent1," | ", fixed = TRUE), getElement, 1)
+				if(length(splitComponent[[1]]) > 1){
+					componentVendor = sapply(strsplit(splitComponent1," | ", fixed = TRUE), getElement, 2)
 				}					
 			}
 			else{
@@ -182,10 +195,11 @@ Form <- function(input, output, session) {
 			}			
 
 			formCreation = saveFormulation('PFORM', componentName, componentVendor, newPctWt, componentType, 'Nathan Jablonski', lastRow, seqVal, 'New')
-			#print(formCreation)
 		}
 
-		output$formSubmitText <- renderUI({span("Formulation Created", style = "color:black")})
+		output$formSubmitText <- renderUI({
+			HTML(paste("Formulation Created: ", "<b>", as.character(formCreation$newFormID),"</b>"))   
+		})
 	})
 	################################################# 
 }

@@ -11,7 +11,7 @@ components <- function(){
   # )
 	
 	# Get all components
-  sql <- "SELECT CONCAT(Chemical_Name, ' | ', Manufacturer) as Chemical_Name FROM ChemicalInventory WHERE Active = 'Y';"
+  sql <- "SELECT CONCAT(Chemical_Name, ' | ', Manufacturer) as Chemical_Name FROM ChemicalInventory WHERE Active = 'Y' ORDER BY Chemical_Name;"
   chemical <- dbGetQuery(con, sql)
   dbDisconnect(con)
 
