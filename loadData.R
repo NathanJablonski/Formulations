@@ -11,19 +11,51 @@ components <- function(){
   # )
 	
 	# Get all components
-  sql <- "SELECT distinct Chemical_Name FROM ChemicalInventory;"
+  sql <- "SELECT CONCAT(Chemical_Name, ' | ', Manufacturer) as Chemical_Name FROM ChemicalInventory WHERE Active = 'Y';"
   chemical <- dbGetQuery(con, sql)
   dbDisconnect(con)
+
   return(chemical$Chemical_Name)
 }
 
-saveFormulation <- function(){
+formSequence <- function(){
   con <- connect_to_Db()
 
-  sql <- "INSERT INTO FormulationComponents (Formulation_ID, Component, Manufacturer,Pct_By_Weight, Type, Created_By)
-          VALUES('PF2', 'Glycol', 'Sigma', 25, 'PForm', 'Nathan')"
-
-  form <- dbGetQuery(con, sql)
+  # Get Formulation Sequence
+  sql <- "SELECT Counter FROM SeqCounter where SeqType = 'PForm';"
+  seq <- dbGetQuery(con, sql)
   dbDisconnect(con)
-  #return(form)
+
+  return(seq$Counter)
+}
+
+saveFormulation <- function(seqType, componentName, componentVendor, pctByWeight, componentType, createdBy, lastRow, formCounter, formStatus){
+  con <- connect_to_Db()
+
+  sql <- paste("EXEC CreateFormulation @seqType = N'", seqType, "',", "@componentName = N'", componentName, "',", "@componentVendor = N'", componentVendor, 
+      "',", "@pctByWeight = ", pctByWeight, 
+      ",", "@componentType = N'", componentType, 
+      "',", "@createdBy = N'", createdBy, 
+      "',", "@lastRow = N'", lastRow, 
+      "',", "@formCounter = ", formCounter, 
+      ",", "@formStatus = N'", formStatus, 
+      "',", "@newFormID = Null", sep = "")
+
+  cat(file=stderr(), "SQL: ", sql, "\n")
+
+  #tryCatch({
+    queryOutput <- dbGetQuery(con, sql)
+    dbDisconnect(con)
+
+    cat(file=stderr(), "Query output: ", as.character(queryOutput$newFormID), "\n")
+    return(queryOutput)
+  # },
+  # warning = function(w) {
+  #   cat(file=stderr(), "Warning: ", w, "\n")
+  #   #return(data.frame(Confirmation = 'Failed to add Formulation entry'))
+  #  },
+  # error = function(e) {
+  #   cat(file=stderr(), "Error: ", e, "\n")
+  #   #return(data.frame(Confirmation = 'Failed to add Formulation entry'))
+  # })
 } 
