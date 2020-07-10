@@ -1,3 +1,4 @@
+--Create stored procedure for creating new Formulation
 CREATE OR ALTER PROCEDURE CreateFormulation
 @seqType VarChar(20),
 @componentName VarChar(300),
@@ -80,6 +81,7 @@ Create Table FormulationAudit(
 	PRIMARY KEY(Formulation_ID,Audit_Sequence)
 );
 
+--Trigger for updating FormulationAudit table
 BEGIN TRANSACTION
 GO
 Alter trigger FormulationAuditTigger on Formulation
@@ -109,12 +111,12 @@ Create Table ChemicalInventory(
 );
 
 Create Table FormulationComponents(
-Formulation_ID VarChar(50) NOT NULL,
-Component VarChar(100),
-Manufacturer VarChar(100),
-Pct_By_Weight Decimal(6,3) NOT NULL,
-Component_Type VarChar(50),
-Created_By VarChar(100),
-Created_Datetime DATETIME
-PRIMARY KEY(Formulation_ID, Component, Manufacturer)
+	Formulation_ID VarChar(50) NOT NULL,
+	Component VarChar(100),
+	Manufacturer VarChar(100),
+	Pct_By_Weight Decimal(6,3) NOT NULL,
+	Component_Type VarChar(50),
+	Created_By VarChar(100),
+	Created_Datetime DATETIME
+	PRIMARY KEY(Formulation_ID, Component, Manufacturer)
 );
