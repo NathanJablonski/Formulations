@@ -60,6 +60,16 @@ getTableData <-  function(query){
   dataout
 }
 
+getNoteSeq <- function(){
+  con <- connect_to_Db()
+
+  # Get Notes sequence
+  sql <- "select MAX(Row_ID) + 1 as NoteSeq from FormulationNotes;"
+  seq <- dbGetQuery(con, sql)
+  dbDisconnect(con)
+  return(seq$NoteSeq)
+}
+
 #saveFormulation <- function(seqType, componentName, componentVendor, pctByWeight, componentType, createdBy, lastRow, formCounter, formStatus){
 saveFormulation <- function(seqType, componentName, componentVendor, universalID, pctByWeight, formType, createdBy, lastRow, formCounter, formStatus){
   con <- connect_to_Db()

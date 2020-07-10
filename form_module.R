@@ -7,11 +7,11 @@ Form_UI <- function(id){
   source("connect_to_Db.R", local =TRUE)
   ns <- NS(id)
 
-shinyUI(fluidPage(
-  tabsetPanel(
-  #titlePanel("Formulations"),
+#shinyUI(fluidPage(
+  #tabsetPanel(
+  
   	tabPanel("Create Formulation",
-  		fluidPage(
+  		fluidPage(titlePanel("Formulations"),
   		  sidebarLayout(
   		    sidebarPanel(width = 5,
       			fluidRow(
@@ -63,15 +63,15 @@ shinyUI(fluidPage(
   		) 
   	  )			
 	 )
-    ),
+    )#,
 
-	tabPanel("Notes",
+# 	tabPanel("Notes",
 		
-	)
+# 	)
 	
-   )
-  )
- )
+#    )
+#   )
+#  )
 }
   
 

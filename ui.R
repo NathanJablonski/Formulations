@@ -9,10 +9,15 @@ library(stringr)
 
 #source("loadData.R", local = TRUE)
 #source("connect_to_Db.R", local =TRUE)
+source("NotesModule.R", local = TRUE)
 
 # User interface ----
 shinyUI(fluidPage(
-  titlePanel("Formulation"),
+  titlePanel("Formulations"),
   
-  Form_UI('Form_UI1')
+  tabsetPanel(
+    Form_UI('Form_UI1'),
+    NotesModule_UI('Form_NotesUI')
+  )
+  
 ))
