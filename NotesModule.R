@@ -10,7 +10,7 @@
 NotesModule_UI <- function(id){
   ns <- NS(id)
 
-  tabPanel("Notes",
+  tabPanel("View Formulation",
     fluidPage(
       titlePanel("Add/Review Notes"),
 
@@ -38,7 +38,7 @@ NotesModule_UI <- function(id){
 
       tableOutput(ns("notesTable")),
 
-      verbatimTextOutput(ns("notesTextOutput"), placeholder = TRUE)
+      #verbatimTextOutput(ns("notesTextOutput"), placeholder = TRUE)
     )
   )
 
@@ -75,7 +75,8 @@ NotesModule <- function(input, output, session) {
 
   retrieveNotes <- reactive({
     input$SubmitNotes
-    query = paste("select Formulation_ID, Note_Content, FORMAT(createdt, 'yyyy-MM-dd HH:mm') as Created_Datetime, createby as Created_By from FormulationNotes where Formulation_ID = '", input$formSelect, "' order by createdt;", sep = "")
+    #query = paste("select Formulation_ID, Note_Content, FORMAT(createdt, 'yyyy-MM-dd HH:mm') as Created_Datetime, createby as Created_By from FormulationNotes where Formulation_ID = '", input$formSelect, "' order by createdt;", sep = "")
+    query = paste("select Note_Content as Notes, FORMAT(createdt, 'yyyy-MM-dd HH:mm') as Created, createby as Created_By from FormulationNotes where Formulation_ID = '", input$formSelect, "' order by createdt;", sep = "")
     getTableData(query)
   })
 
@@ -112,18 +113,18 @@ NotesModule <- function(input, output, session) {
         HTML("Formulation Notes")
     })
 
-    retrieveNotes()[, c("Formulation_ID",'Note_Content','Created_Datetime', 'Created_By')] 
+    retrieveNotes()[, c('Notes','Created', 'Created_By')] 
   }, width = "700px")
 
-  output$notesTextOutput <- renderText({
-    if(input$formSelect != 'Select one'){
-      savedNotes <- retrieveNotes()
-      str = ""
+  # output$notesTextOutput <- renderText({
+  #   if(input$formSelect != 'Select one'){
+  #     savedNotes <- retrieveNotes()
+  #     str = ""
 
-      for(i in 1:length(savedNotes[[1]])){ 
-        str = paste(str, i, savedNotes$Note_Content[i], "\n", savedNotes$Created_Datetime[i], savedNotes$Created_By[i], "\n\n", sep = " ")
-      }
-      paste(str)
-    }    
-  })
+  #     for(i in 1:length(savedNotes[[1]])){ 
+  #       str = paste(str, i, savedNotes$Note_Content[i], "\n", savedNotes$Created_Datetime[i], savedNotes$Created_By[i], "\n\n", sep = " ")
+  #     }
+  #     paste(str)
+  #   }    
+  # })
 }
