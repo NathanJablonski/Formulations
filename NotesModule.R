@@ -27,13 +27,18 @@ NotesModule_UI <- function(id){
       br(),
 
       fluidRow(
-					h4(htmlOutput(ns('noteSubmitText')))
+          uiOutput(ns('noteSubmitText'))
 			),
-      tags$br(),
       tags$hr(),
+      tags$br(),      
 
       h4(htmlOutput(ns('notesText'))),
-      DT::dataTableOutput(ns("formNotesDT"), width = "600px"),	
+      #DT::dataTableOutput(ns("formNotesDT"), width = "600px"),	
+      #br(),
+
+      tableOutput(ns("notesTable")),
+
+      verbatimTextOutput(ns("notesTextOutput"), placeholder = TRUE)
     )
   )
 
@@ -49,6 +54,8 @@ NotesModule <- function(input, output, session) {
         HTML("Formulation Components")
     })
 
+    output$noteSubmitText <- renderUI({span("") })
+
     retrieveFormulation()[, c("Formulation_ID",'Component','Manufacturer', 'Pct_By_Weight',"Component_Type")]      
   }))
 
@@ -57,34 +64,66 @@ NotesModule <- function(input, output, session) {
     getTableData(query)
   })
 
-  output$formNotesDT <- DT::renderDataTable(DT::datatable(
-  {      
-    output$notesText <- renderUI({
-        HTML("Formulation Notes")
-    })
+  # output$formNotesDT <- DT::renderDataTable(DT::datatable(
+  # {      
+  #   output$notesText <- renderUI({
+  #       HTML("Formulation Notes")
+  #   })
     
-    retrieveNotes()[, c("Formulation_ID",'Note_Content','Created_Datetime', 'Created_By')]      
-  }))
+  #   retrieveNotes()[, c("Formulation_ID",'Note_Content','Created_Datetime', 'Created_By')]      
+  # }))
 
   retrieveNotes <- reactive({
     input$SubmitNotes
-    query = paste("select Formulation_ID, Note_Content, createdt as Created_Datetime, createby as Created_By from FormulationNotes where Formulation_ID = '", input$formSelect, "' order by createdt;", sep = "")
+    query = paste("select Formulation_ID, Note_Content, FORMAT(createdt, 'yyyy-MM-dd HH:mm') as Created_Datetime, createby as Created_By from FormulationNotes where Formulation_ID = '", input$formSelect, "' order by createdt;", sep = "")
     getTableData(query)
   })
 
   observeEvent(input$SubmitNotes, {
-    noteSeq = getNoteSeq()
-    print(paste("Notes Seq: ", noteSeq))
-    sql = paste("INSERT INTO FormulationNotes (Row_ID, Formulation_ID, createby, createdt, Note_Content) Values(", noteSeq, ",'", input$formSelect, "','njablonski', SYSDATETIME(),'", input$formNotesInput,"')", sep = "")
-    print(sql)
-    queryOutput <- getTableData(sql)
+    output$noteSubmitText <- renderUI({span("") })
 
-    print(paste("Update output: ", queryOutput))
-
-    if(length(queryOutput) == 0){
+    if(input$formSelect == 'Select one'){
       output$noteSubmitText <- renderUI({
-        HTML("Note Saved")
-      })
+        span("Error - Please Select a Formulation", style = "color:orange")})
+    }
+    else if(input$formNotesInput == ""){
+      output$noteSubmitText <- renderUI({
+        span("Error - Please Enter a Note", style = "color:orange")})
+    }
+    else{
+      noteSeq = getNoteSeq()
+      print(paste("Notes Seq: ", noteSeq))
+      sql = paste("INSERT INTO FormulationNotes (Row_ID, Formulation_ID, createby, createdt, Note_Content) Values(", noteSeq, ",'", input$formSelect, "','njablonski', SYSDATETIME(),'", input$formNotesInput,"')", sep = "")
+      print(sql)
+      queryOutput <- getTableData(sql)
+
+      print(paste("Update output: ", queryOutput))
+
+      if(length(queryOutput) == 0){
+        output$noteSubmitText <- renderUI({span("Note Saved")})
+
+        updateTextAreaInput(session, "formNotesInput", value = "")
+      }    
+    }
+  })
+
+  output$notesTable <- renderTable({
+    output$notesText <- renderUI({
+        HTML("Formulation Notes")
+    })
+
+    retrieveNotes()[, c("Formulation_ID",'Note_Content','Created_Datetime', 'Created_By')] 
+  }, width = "700px")
+
+  output$notesTextOutput <- renderText({
+    if(input$formSelect != 'Select one'){
+      savedNotes <- retrieveNotes()
+      str = ""
+
+      for(i in 1:length(savedNotes[[1]])){ 
+        str = paste(str, i, savedNotes$Note_Content[i], "\n", savedNotes$Created_Datetime[i], savedNotes$Created_By[i], "\n\n", sep = " ")
+      }
+      paste(str)
     }    
   })
 }
